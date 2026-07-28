@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 from app.handler import lambda_handler
 
@@ -39,7 +40,8 @@ def test_unknown_route_returns_not_found():
     assert body["message"] == "route not found"
 
 
-def test_create_deployment_success():
+@patch("app.handler.save_deployment")
+def test_create_deployment_success(mock_save_deployment):
     event = {
         "rawPath": "/deployments",
         "requestContext": {
@@ -68,8 +70,11 @@ def test_create_deployment_success():
     assert "deploymentId" in body
     assert "createdAt" in body
 
+    mock_save_deployment.assert_called_once_with(body)
 
-def test_create_deployment_missing_fields():
+
+@patch("app.handler.save_deployment")
+def test_create_deployment_missing_fields(mock_save_deployment):
     event = {
         "rawPath": "/deployments",
         "requestContext": {
@@ -95,8 +100,11 @@ def test_create_deployment_missing_fields():
         "status",
     ]
 
+    mock_save_deployment.assert_not_called()
 
-def test_create_deployment_invalid_json():
+
+@patch("app.handler.save_deployment")
+def test_create_deployment_invalid_json(mock_save_deployment):
     event = {
         "rawPath": "/deployments",
         "requestContext": {
@@ -112,3 +120,5 @@ def test_create_deployment_invalid_json():
 
     assert response["statusCode"] == 400
     assert body["message"] == "invalid JSON body"
+
+    mock_save_deployment.assert_not_called()
