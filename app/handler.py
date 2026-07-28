@@ -2,6 +2,8 @@ import json
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from app.storage import save_deployment
+
 
 def build_response(status_code, body):
     return {
@@ -82,6 +84,8 @@ def lambda_handler(event, context):
             "status": request_body["status"],
             "createdAt": datetime.now(UTC).isoformat(),
         }
+
+        save_deployment(deployment)
 
         return build_response(201, deployment)
 
